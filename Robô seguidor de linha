@@ -1,0 +1,141 @@
+//- 👋 Hi, I’m @VykDMorais
+//- 👀 I’m interested in mechatronics and communism :)
+//- 🌱 I’m currently learning mechatronics and communism :)
+//- 💞️ I’m looking to collaborate on world using mechatronics knowledge and implementing communism 
+//- 📫 How to reach me @VykD12 on twitter
+
+// Código seguidor de linha (simples, por enquanto)
+// Versão: 11:35 - 15/09/2022
+/*
+ * File:          simple_line_follower.c
+ * Date: 01/09/2022
+ * Description: Código Simples para inicialização dos motores e sensores de luminosidade
+ * Author: Adriano N. D. Lopes
+ * Modifications:
+ */
+
+/*
+ * You may need to add include files like <webots/distance_sensor.h> or
+ * <webots/motor.h>, etc.
+ */
+
+  #include <stdio.h>
+  #include <webots/distance_sensor.h>
+  //#include <webots/led.h>
+  // #include <webots/light_sensor.h>
+  #include <webots/motor.h>
+  #include <webots/robot.h>
+
+
+/*
+ * You may want to add macros here.
+ */
+#define TIME_STEP 64
+#define S 2
+#define fs 1.0
+
+double ls;
+double rs;
+/*
+  S = VELOCIDADE GLOBAL
+  fs = OFFSET DE VELOCIDADE
+  ls = velocidade motor esquerdo // rs_"" 
+*/
+
+WbDeviceTag gs0, gs1, gs2, left_motor, right_motor;
+unsigned short gs_value[3] = {0, 0, 0};
+
+
+/*
+ * This is the main program.
+ * The arguments of the main function can be specified by the
+ * "controllerArgs" field of the Robot node
+ */
+int main(int argc, char **argv) {
+  /* necessary to initialize webots stuff */
+  wb_robot_init();
+
+  /*
+   * You should declare here WbDeviceTag variables for storing
+   * robot devices like this:
+   *  WbDeviceTag my_sensor = wb_robot_get_device("my_sensor");
+   *  WbDeviceTag my_actuator = wb_robot_get_device("my_actuator");
+   */
+   gs0 = wb_robot_get_device("gs0");
+   gs1 = wb_robot_get_device("gs1");
+   gs2 = wb_robot_get_device("gs2");
+   wb_distance_sensor_enable(gs0, TIME_STEP);
+   wb_distance_sensor_enable(gs1, TIME_STEP);
+   wb_distance_sensor_enable(gs2, TIME_STEP);
+
+   left_motor = wb_robot_get_device("left wheel motor");
+   right_motor = wb_robot_get_device("right wheel motor");
+   wb_motor_set_position(left_motor, INFINITY);
+   wb_motor_set_position(right_motor, INFINITY);
+   wb_motor_set_velocity(left_motor, 0.0);
+   wb_motor_set_velocity(right_motor, 0.0);
+  /* main loop
+   * Perform simulation steps of TIME_STEP milliseconds
+   * and leave the loop when the simulation is over
+   */
+  while (wb_robot_step(TIME_STEP) != -1) {
+   
+    /*
+     * Read the sensors :
+     * Enter here functions to read sensor data, like:
+     *  double val = wb_distance_sensor_get_value(my_sensor);
+     */
+     gs_value[0] = wb_distance_sensor_get_value(gs0);
+     gs_value[1] = wb_distance_sensor_get_value(gs1);
+     gs_value[2] = wb_distance_sensor_get_value(gs2);
+     float delta;
+     float gst[4];
+     gst[0] =  ((float)gs_value[0]-250)/650; // esquerdo
+     gst[2] =  ((float)gs_value[2]-250)/650; // direito
+     
+     float kp = 0 , kd = 0,  ki = 0, delta_anterior,delta_sum, delta_diff; // 
+     /*
+     *  kp = ganho proporcional 
+     *  kd = ganho multiplicado pela delta anterior - delta atual
+       *  ki = acumulo dos deltas
+     */
+     kp = 1.9;
+     kd = 0;
+     ki = 0.5;
+    /* Process sensor data here */
+     delta_anterior = delta;
+     
+     delta_sum = delta_sum + delta;
+     delta_diff = delta - delta_anterior; 
+    
+     delta = (gst[0] - gst[2])/0.85;
+    
+     ls = 2.4 * 0.785 + 3*delta + 2*delta_anterior;
+     rs = 2.4 * 0.785 - 3*delta - 2*delta_anterior;
+     
+    
+     
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     
+     /*if(gst[0] < 0.8 && gst[1] < 0.8){
+       /*wb_motor_set_position(left_motor, 0);
+       wb_motor_set_position(right_motor, 0);
+       wb_motor_set_velocity(left_motor, 0.0);
+       wb_motor_set_velocity(right_motor, 0.0);*
+     
+    /*
+     * Enter here functions to send actuator commands, like:
+     * wb_motor_set_position(my_actuator, 10.0);
+     */
+     
+     printf("Delta: %f | Motor Esquerdo: %f | Motor Direito: %f | GS0: %f | GS2: %f \n",delta, ls, rs, gs_value[0], gs_value[2]);
+  };
+
+  /* Enter your cleanup code here */
+
+  /* This is necessary to cleanup webots resources */
+  wb_robot_cleanup();
+
+  return 0;
+}
