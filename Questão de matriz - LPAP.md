@@ -1,4 +1,4 @@
-//Criação de uma matriz quadrática entre 1 e 8  -Víctor BM
+//Criação de uma matriz quadrática entre 1 e 8  - Víctor BM
 #include <stdio.h>
 
 int main (){
