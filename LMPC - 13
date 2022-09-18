@@ -106,35 +106,36 @@ int main(){
                 if (mes == 2 && dia > 29){
                     goto REFAZ;
                 }
-                else if (mes == 1 || mes == 3 || mes == 5 || mes == 7 || mes == 8 || mes == 10 || mes == 12 && dia > 31){
+                else if ((mes == 1 || mes == 3 || mes == 5 || mes == 7 || mes == 8 || mes == 10 || mes == 12) && dia > 31){
                     goto REFAZ;
                 }
-                else if (mes == 4 || mes == 6 || mes == 7 || mes == 9 || mes == 11 && dia > 30){
+                else if ((mes == 4 || mes == 6 || mes == 7 || mes == 9 || mes == 11) && dia > 30){
                     goto REFAZ;
                 }
                 else{
                     quando = calculobi (dia, mes);
-                    printf ("Esse é o dia número %d do ano %.0f", quando, ano);
+                    printf ("Esse é o dia número %d do ano %.0f\n\n", quando, ano);
+                    goto REFAZ;
                 } 
             }
             else{
                if (mes == 2 && dia > 28){
                     goto REFAZ;
                 }
-                else if (mes == 1 || mes == 3 || mes == 5 || mes == 7 || mes == 8 || mes == 10 || mes == 12 && dia > 31){
+                else if ((mes == 1 || mes == 3 || mes == 5 || mes == 7 || mes == 8 || mes == 10 || mes == 12) && dia > 31){
                     goto REFAZ;
                 }
-                else if (mes == 4 || mes == 6 || mes == 9 || mes == 11 && dia > 30){
+                else if ((mes == 4 || mes == 6 || mes == 9 || mes == 11) && dia > 30){
                     goto REFAZ;
                 }
                 else{
-                    goto JUMP;
+                    quando = calculo (dia, mes);
+                    printf ("Esse é o dia número %d do ano %.0f\n\n", quando, ano);
+                    goto REFAZ;
                 } 
             }
         }
        
     }
-    JUMP: quando = calculo (dia, mes);
-    printf ("Esse é o dia número %d do ano %.0f", quando, ano);
     return (0);
 }
