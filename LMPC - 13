@@ -1,4 +1,4 @@
-/13 - LMPC
+//13 - LMPC
 #include <stdio.h>
 
 int calculo (float dia, float mes){
