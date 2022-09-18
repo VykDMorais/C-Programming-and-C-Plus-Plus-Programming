@@ -1,8 +1,8 @@
 //12
-#include <stdio.h>
+#include <stdio.h> // inclui a biblioteca de funções padrões I/O
 
 int main(){
-    int num;  // inclui a biblioteca de funções padrões I/O
+    int num;  
     do{ // imprime a pergunta e salva na variável num
     printf ("\tDigite um número inteiro de 9 a 11\n");
     scanf ("%d", &num);
