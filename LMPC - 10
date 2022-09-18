@@ -1,0 +1,18 @@
+//10
+#include <stdio.h>  // inclui a biblioteca de funções padrões I/O
+#include <string.h> // inclui a biblioteca de funções com string
+
+int main() {
+   char string1 [100], string2 [100]; // declaração de variáveis, string, uma normal e a outra inversa
+   int i, n; // declaração de variáveis, int, contador e tamanho da string
+   printf ("Digite qualquer coisa\n"); // escreve na tela do usuário
+   gets (string1); // salva a resposta na string 1
+   n = strlen (string1); // salva na variável n o tamanho da string 1
+   printf ("Comprimento da string1 é: %d", n); // escreve na tela do usuário
+   for (i = 0; i < n; i++){ // loop começa em 0, acaba no tamanho da string1 e incrementa 1 por vez
+       string2[i] = string1[n - i - 1]; // Ex: a coluna 0 da string 2 é corresponente a coluna 2 sa string1
+   }
+   string2 [n] = '\0'; // a última coluna da string2 é vazio, senão, o programa rodaria até o fim da string2
+   printf ("\n%s\n", string2); // escreve na tela do usuário
+   return (0); // retorna 0
+}
