@@ -1,0 +1,23 @@
+//12
+#include <stdio.h>
+
+int main(){
+    int num;  // inclui a biblioteca de funções padrões I/O
+    do{ // imprime a pergunta e salva na variável num
+    printf ("\tDigite um número inteiro de 9 a 11\n");
+    scanf ("%d", &num);
+    }
+    while (num < 9 || num > 11); // o do vai se repetir enquanto num é menor que 9 ou maior que 11
+    switch (num){ // condições para o valor de num
+        case 9: // se for um dos 3 números, imprime a respota respectiva e fecha o switch
+        printf ("Você digitou 9");
+        break;
+        case 10:
+        printf ("Você digitou 10");
+        break;
+        case 11:
+        printf ("Você digitou 11");
+        break;
+    }
+    return (0); // retorna 0
+}
