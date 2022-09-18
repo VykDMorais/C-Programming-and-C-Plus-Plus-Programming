@@ -1,0 +1,140 @@
+/13 - LMPC
+#include <stdio.h>
+
+int calculo (float dia, float mes){
+    int soma;
+    if (mes == 1){
+        soma = dia;
+    }
+    else if (mes == 2){
+      soma = 31 + dia;
+    }
+    else if (mes == 3){
+        soma = 58 + dia;
+    }
+    else if (mes == 4){
+        soma = 90 + dia;
+    }
+    else if (mes == 5){
+        soma = 120 + dia;
+    }
+    else if (mes == 6){
+        soma = 151 + dia;
+    }
+    else if (mes == 7){
+        soma = 181 + dia;
+    }
+    else if (mes == 8){
+        soma = 212 + dia;
+    }
+    else if (mes == 9){
+        soma = 243 + dia;
+    }
+    else if (mes == 10){
+        soma = 273 + dia;
+    }
+    else if (mes == 11){
+        soma = 304 + dia;
+    }
+    else if (mes == 12){
+        soma = 334 + dia;
+    }
+    return (soma);
+}
+
+int calculobi (float dia, float mes){
+    int soma;
+    if (mes == 1){
+        soma = dia;
+    }
+    else if (mes == 2){
+        soma = 31 + dia;
+    }
+    else if (mes == 3){
+        soma = 60 + dia;
+    }
+    else if (mes == 4){
+        soma = 91 + dia;
+    }
+    else if (mes == 5){
+        soma = 121 + dia;
+    }
+    else if (mes == 6){
+        soma = 152 + dia;
+    }
+    else if (mes == 7){
+        soma = 182 + dia;
+    }
+    else if (mes == 8){
+        soma = 213 + dia;
+    }
+    else if (mes == 9){
+        soma = 244 + dia;
+    }
+    else if (mes == 10){
+        soma = 274 + dia;
+    }
+    else if (mes == 11){
+        soma = 305 + dia;
+    }
+    else if (mes == 12){
+        soma = 335 + dia;
+    }
+    return (soma);
+}
+
+int main(){
+    float dia, mes, ano;
+    int quando;
+    REFAZ: do{
+        printf ("Digite um dia, mês e ano válidos entre os anos de 1900 e 2100\n");
+        scanf ("%f%f%f", &dia, &mes, &ano);
+    }
+    while ((int)dia != dia && (int)mes != mes && (int)ano != ano);
+    if (ano < 1900 || ano > 2100){
+        goto REFAZ;
+    } 
+    else{
+        if (mes < 1 || mes > 12){
+            goto REFAZ;
+        }
+        else if (dia < 1 ||  dia > 31){
+            goto REFAZ;
+        }
+        else{
+            if ((int)ano%4 == 0 && (int)ano%100 != 0 || (int)ano%400 == 0 && (int)ano%100 == 0){
+                if (mes == 2 && dia > 29){
+                    goto REFAZ;
+                }
+                else if (mes == 1 || mes == 3 || mes == 5 || mes == 7 || mes == 8 || mes == 10 || mes == 12 && dia > 31){
+                    goto REFAZ;
+                }
+                else if (mes == 4 || mes == 6 || mes == 7 || mes == 9 || mes == 11 && dia > 30){
+                    goto REFAZ;
+                }
+                else{
+                    quando = calculobi (dia, mes);
+                    printf ("Esse é o dia número %d do ano %.0f", quando, ano);
+                } 
+            }
+            else{
+               if (mes == 2 && dia > 28){
+                    goto REFAZ;
+                }
+                else if (mes == 1 || mes == 3 || mes == 5 || mes == 7 || mes == 8 || mes == 10 || mes == 12 && dia > 31){
+                    goto REFAZ;
+                }
+                else if (mes == 4 || mes == 6 || mes == 9 || mes == 11 && dia > 30){
+                    goto REFAZ;
+                }
+                else{
+                    goto JUMP;
+                } 
+            }
+        }
+       
+    }
+    JUMP: quando = calculo (dia, mes);
+    printf ("Esse é o dia número %d do ano %.0f", quando, ano);
+    return (0);
+}
