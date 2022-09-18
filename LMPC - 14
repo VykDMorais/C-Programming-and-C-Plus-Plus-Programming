@@ -1,0 +1,26 @@
+//14
+#include <stdio.h>
+
+int main() {
+   int num[100], conta = 0, total, dois;
+   do{
+       printf ("\nEntre com um numero (-999 p/ terminar): ");
+       scanf ("%d", &num[conta]);
+       conta++;
+       total = conta - 1;
+       
+   }
+   while (num[conta - 1] != -999 && total < 100); 
+   // Exemplo, para coluna 1, o conta vai ser dois pq rodou 2 vezes // o do e tem q tirar 1 
+   if (total == 100){
+       printf ("Quantidade excedente de números (>100)\n");
+       goto FAZ;
+   }
+   else{
+       FAZ: printf ("Você digitou os números:\n");
+       for (conta = 0; conta < total; conta++){
+           printf ("\n%d", num[conta]);
+       }
+   }
+   return (0);
+}
