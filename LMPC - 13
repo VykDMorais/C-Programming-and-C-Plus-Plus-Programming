@@ -90,7 +90,7 @@ int main(){
         printf ("Digite um dia, mês e ano válidos entre os anos de 1900 e 2100\n");
         scanf ("%f%f%f", &dia, &mes, &ano);
     }
-    while ((int)dia != dia && (int)mes != mes && (int)ano != ano);
+    while ((int)dia != dia || (int)mes != mes || (int)ano != ano);
     if (ano < 1900 || ano > 2100){
         goto REFAZ;
     } 
