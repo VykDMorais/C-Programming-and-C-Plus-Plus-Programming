@@ -1,0 +1,18 @@
+//p++ -> incrementa o ponteiro
+//(*p)++ -> incrementa o conteúdo da variável
+//*(p++) -> atribui a variavel o valor do ponteiro incrementado
+//p=p+15 -> incrementa um ponteiro de 15
+
+int main()
+{
+ int y, *p, x;
+ y = 0;
+ p = &y; //pega e salva o valor de y no pointer p
+ x = *p; // modifica y falando q ele é igual a x
+ x = 4;
+ (*p)++; // incrementa o y (y = 1)
+ x--; // decrementa x (x = 3)
+  (*p) += x; //adiciona x no y
+ printf ("y = %d\n", y); //y é igual a 4
+ return(0);
+}
