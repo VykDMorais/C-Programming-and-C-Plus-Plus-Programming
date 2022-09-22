@@ -1,0 +1,47 @@
+// 7 da lista de for usando uma função
+
+/* Pseudo-Código:
+inserir um número
+
+while do resultado diferente de n vezes n
+resultado é i vezes n, i começa em 1
+incementa um por vez
+*/
+#include <stdio.h>
+#include <string.h>
+int tabuada (float num){
+    int r, i;
+    printf ("A tabuada é:\n");
+    for (i = 0; i <= 10; i++){
+        r = num*i;
+        printf ("%.0f * %d = %d\n", num, i, r);
+    }
+    return (r);
+}
+
+int main() {
+    float num, quer;
+    int aux = 0, result;
+    while (aux == 0){
+        printf ("\nVocê quer ver uma tabuada? [0 para não e 1 para sim]\n");
+        scanf ("%f", &quer);
+        if (((int)quer == quer) && quer == 1){
+            printf ("Digite um número de 1 a 10\n");
+            scanf ("%f", &num);
+            if (((int)num == num) && num >= 1 && num <= 10){
+                result = tabuada (num);
+            }
+            else{
+                printf ("Número inválido, tente novamente\n");
+            }
+        }
+        else if (((int)quer == quer) && quer == 0){
+            printf ("Encerrando programa\n");
+            break;
+        }
+        else{
+            printf ("Resposta inválida, tente novamente\n");
+        }
+    }
+    return (0);
+}
