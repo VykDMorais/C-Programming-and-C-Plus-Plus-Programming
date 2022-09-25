@@ -2,6 +2,8 @@
 //(*p)++ -> incrementa o conteúdo da variável
 //*(p++) -> atribui a variavel o valor do ponteiro incrementado
 //p=p+15 -> incrementa um ponteiro de 15
+//p = &valor - > salva valor no ponteiro
+//*p = 15 -> muda o valor de valor para 15
 
 int main()
 {
