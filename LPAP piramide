@@ -1,0 +1,54 @@
+//Criação de uma matriz quadrática entre 1 e 8 - Víctor BM
+/* 
+ x = 1 y = 4 -> 1 + 4 
+ x = 2 y = 3 -> 
+ x = 3 y = 2
+ x = 4 y = 1
+*/
+#include <stdio.h>
+
+int main (){
+    char matriz [8][8], matriz2 [8][8]; // 8 linhas e 8 colunas
+    // tamanho necessário para a conclusão da questão
+    int x, y; // variáveis x e y correspondentes a linha e coluna
+    float num; // variável do número
+    printf ("Digite um número entre 1 e 8\n");
+    scanf ("%f", &num);
+    if ((int)num == num && num >= 1 && num <=8){
+        for (x = 0; x < num; x++){ 
+            for (y = 0; y < num; y++){ 
+                if (x + y >= num-1){
+                    matriz [x][y] = '#';
+                }
+                else{
+                    matriz [x][y] = '.';
+                }
+            }
+        }
+        for (x = 0; x < num; x++){
+            for (y = 0; y < num; y++){
+                if (x - y < 0){
+                    matriz2 [x][y] = '.';
+                }
+                else{
+                    matriz2 [x][y] = '#';
+                }
+            }
+        }
+        
+        for (x = 0; x < num; x++){
+            for (y = 0; y < num; y++){
+                printf ("%c ", matriz[x][y]);
+            }
+            printf (" ");
+             for (y = 0; y < num; y++){
+                printf ("%c ", matriz2[x][y]);
+            }
+            printf ("\n");
+        }
+    }
+    else{
+        printf ("Erro, número inválido");
+    }
+    return (0);
+}
