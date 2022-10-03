@@ -1,0 +1,161 @@
+#include <webots/motor.h>
+#include <webots/robot.h>
+#include <webots/position_sensor.h>
+#include <webots/led.h>
+#include <stdio.h>
+#include <webots/distance_sensor.h>
+#define TIME_STEP 8
+#include <time.h> 
+   
+int main(int argc, char **argv){
+  wb_robot_init();
+
+  WbDeviceTag roda_direita, roda_esquerda;
+  WbDeviceTag encoder_direito, encoder_esquerdo;
+     
+  roda_direita = wb_robot_get_device("roda_direita");
+  roda_esquerda = wb_robot_get_device("roda_esquerda");
+  
+  wb_motor_set_position(roda_direita, INFINITY);
+  wb_motor_set_position(roda_esquerda, INFINITY); 
+  
+  encoder_direito = wb_robot_get_device ("encoder_direito");
+  encoder_esquerdo = wb_robot_get_device ("encoder_esquerdo");  
+  
+  wb_position_sensor_enable(encoder_direito, 100);
+  wb_position_sensor_enable(encoder_esquerdo, 100);
+
+  float velocidade_roda_direita = 0.0;
+  float velocidade_roda_esquerda = 0.0;
+  
+  wb_motor_set_velocity(roda_direita, velocidade_roda_direita);
+  wb_motor_set_velocity(roda_direita, velocidade_roda_direita);
+  
+  void virar_esquerda(){
+  
+  float ultima_distancia = wb_position_sensor_get_value(encoder_direito);
+  
+  while(wb_position_sensor_get_value(encoder_direito) - ultima_distancia < 7){
+    velocidade_roda_direita = 10;
+    velocidade_roda_esquerda = -5;
+    wb_motor_set_velocity(roda_direita, velocidade_roda_direita);
+    wb_motor_set_velocity(roda_esquerda, velocidade_roda_esquerda);
+    wb_robot_step(TIME_STEP);
+  }
+  }
+  void virar_direita(){
+  float distancia_ant = wb_position_sensor_get_value(encoder_esquerdo);
+  while(wb_position_sensor_get_value(encoder_esquerdo) - distancia_ant < 7){
+  velocidade_roda_direita = -5;
+  velocidade_roda_esquerda = 10;
+  wb_motor_set_velocity(roda_direita, velocidade_roda_direita);
+  wb_motor_set_velocity(roda_esquerda, velocidade_roda_esquerda);
+  wb_robot_step(TIME_STEP);
+  }
+  }
+ 
+  
+  int cont = 0;
+  
+
+  while (wb_robot_step(TIME_STEP) != -1) {   
+   
+   float encoder_D = (wb_position_sensor_get_value(encoder_direito)*68/1000);
+   float encoder_E = (wb_position_sensor_get_value(encoder_esquerdo)*68/1000);
+   
+
+        
+      velocidade_roda_direita = 10;
+      velocidade_roda_esquerda = 10;
+      
+      wb_motor_set_velocity(roda_direita, velocidade_roda_direita);
+      wb_motor_set_velocity(roda_esquerda, velocidade_roda_esquerda);
+      
+      
+      if(encoder_E > 91.7 && cont == 0 ){
+      
+      virar_esquerda();
+      cont++;
+      } 
+      if(encoder_E > 94.4 && cont == 1 ){
+      
+      virar_esquerda();
+      cont++;
+      }
+      if(encoder_E > 96.2 && cont == 2 ){
+      
+      virar_esquerda();
+      cont++;
+      }
+      if (encoder_E > 96.8 && encoder_D > 106.5 && cont == 3){
+      virar_direita();
+      cont++;
+      }
+      if (encoder_E > 99 && encoder_D > 108.2 && cont == 4){
+      virar_direita();
+      cont++;
+      }
+      if (encoder_E > 100.3 && encoder_D > 108.8 && cont == 5){
+      virar_direita();
+      cont++;
+      }
+      if (encoder_E > 101.3 && encoder_D > 109.15 && cont == 6){
+      virar_esquerda();
+      cont++;
+      }
+      if (encoder_E > 102.55 && encoder_D > 111 && cont == 7){
+      virar_direita();
+      cont++;
+      }
+      if (encoder_E > 107.4 && encoder_D > 115.25 && cont == 8){
+      virar_esquerda();
+      cont++;
+      }
+      if (encoder_E > 108.5 && encoder_D > 117 && cont == 9){
+      virar_esquerda();
+      cont++;
+      }
+      if (encoder_E > 112.57 && encoder_D > 121.9 && cont == 10){
+      virar_direita();
+      cont++;
+      }
+      if (encoder_E > 114.2 && encoder_D > 122.78 && cont == 11){
+      virar_esquerda();
+      cont++;
+      }
+      if (encoder_E > 114.72 && encoder_D > 124.05 && cont == 12){
+      virar_direita();
+      cont++;
+      }
+      if (encoder_E > 115.85 && encoder_D > 124.43 && cont == 13){
+      virar_direita();
+      cont++;
+      }
+      if (encoder_E > 118.05 && encoder_D > 125.87 && cont == 14){
+      virar_direita();
+      cont++;
+      }
+      if (encoder_E > 118.54 && encoder_D > 126.37 && cont == 15){
+      virar_esquerda();
+      cont++;
+      }
+      if (encoder_E > 121 && encoder_D > 128.8 && cont == 16){
+      virar_esquerda();
+      cont++;
+      }
+      if (encoder_E > 123.8 && encoder_D > 132 && cont == 17){
+      virar_esquerda();
+      cont++;
+      }
+      //Víctor BM - 2ºA
+
+    printf("\n encoder direito: %f", encoder_D);
+    printf("\n encoder esquerdo: %f", encoder_E);
+    printf("\n cont: %d", cont);
+
+
+}; 
+  wb_robot_cleanup();
+
+  return 0;
+}
