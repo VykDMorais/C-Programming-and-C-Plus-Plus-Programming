@@ -1,0 +1,52 @@
+//Criação de um otimizador de moedas - Víctor BM
+/*
+Primeiramente, o valor inserido pelo usuário deve ser multiplicado por 100, uma vez que o comando de pegar o resto da divisão só aceita números inteiros. Além disso, o valor 100 foi escolhido pelo fato da casa dos centavos ser centesimal, ou seja, o programa vai ler 1.957 como 1.95
+Exemplificação: 1.43
+0.43*100 = 43
+1 real: 43/100 = 0 e sobra 43 
+50 centavos: 43/50 = 0 e sobra 43
+25 centavos: 43/25 = 1 e sobra 18
+10 centavos: 18/10 = 1 e sobra 8
+5 centavos: 8/5 = 1 e sobra 3
+1 centavo: 3/1 = 3 e sobra 0
+Irei exemplificar o resto do código usando 0.43
+*/
+#include <stdio.h>
+#include <math.h>
+
+int main (){
+    float troco;
+    int normaliza, aux, moedas, um = 0, cinquenta = 0, vinteecinco = 0, dez = 0, cinco = 0, cents = 0;
+    printf ("Qual é o troco desejado? (em reais)\n");
+    scanf ("%f", &troco);
+    if (troco <= 0){
+        printf ("Não é necessário troco");
+    }
+    else{
+        normaliza = round(troco*100);
+        um = normaliza/100;
+        cinquenta = (normaliza%100)/50;
+        aux = normaliza%50; // Ex: 43/50 = 0 e sobra 43 
+        printf ("aux1 é: %d\n", aux);
+        if (aux > 0){ // Assim, aux é 43 e acessa esse if
+            vinteecinco = aux/25; // vinteecinco equivale a parte inteira de 43/25, ou seja, 1
+        }
+        aux = (normaliza-cinquenta*50)%25; // aqui aux vai ser 18
+                printf ("aux2 é: %d\n", aux);
+
+        if (aux >= 10){ // aux acessa esse if
+            dez = aux/10; // dez equivale a parte inteira de 18/10, ou seja, 1
+        }
+        aux = (normaliza-cinquenta*50-vinteecinco*25)%10; // aux vai ser 43-25 -> 18/10 = 1 e sobra 8
+                printf ("aux3 é: %d\n", aux);
+
+        if (aux >= 5){ // Assim, aux é 8 e acessa esse if
+            cinco = aux/5; // dez equivale a parte inteira de 8/5, ou seja, 1
+        }
+        cents = (normaliza%5)/1; // 43/5 = 8 e sobra 3. 3 dividido por 1 é igual a 3, um inteiro
+        moedas = um+cinquenta+vinteecinco+dez+cinco+cents;
+        printf ("O número de moedas necessário é: %d\n", moedas);
+        printf ("%d de 1 real\n%d de um 50 centavos\n%d de um 25 centavos\n%d de um 10 centavos\n%d de um 5 centavos\n%d de um 1 centavos\n", um, cinquenta, vinteecinco, dez, cinco, cents);
+    }
+    return (0);
+}
