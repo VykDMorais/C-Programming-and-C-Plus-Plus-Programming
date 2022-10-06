@@ -1,0 +1,206 @@
+//Importando as bibliotecas:
+#include <webots/robot.h>
+#include <webots/motor.h>
+#include <webots/supervisor.h>
+#include <stdio.h>
+#include <math.h>
+
+//Definicao de constantes:
+//Constante matematica pi
+#define PI 3.14159 
+//Velocidade maxima dos motores:
+#define V_MAX 10.0
+//Constante do controlador proporcional 1:
+#define K1 (PI/2.0)
+//Constante do controlador proporcional 2:   
+#define K2 0.5
+//Distancia de parada ao aproximar do objeto (referencial dos eixos, interno):
+#define D_SEG 0.13
+
+//Tempo de cada passo de simulacao:
+#define TIME_STEP 64
+
+//Funcao para retornar o sinal de um double (retorna 1 se positivo ou -1 se negativo):
+int sinal(double num)
+{
+  return (num/fabs(num));
+}
+
+//Funcao para limitar um valor:
+double lim(double val, double lim)
+{
+  if(fabs(val) < lim)
+  {
+    return val;
+  }else
+  {
+    return (lim*sinal(val));
+  }
+}
+
+//Funcao para normalizar angulo:
+double normaliza(double ang)
+{
+  return asin(sin(ang));
+}
+
+//Funcao para encontrar o angulo relativo por coordenadas:
+//(Resolve o problema da tangente nos quadrantes, singularidade e referenciais diferentes no mundo)
+float relativeAngle(float d1, float d2)
+{
+  if(d1 < 0)
+    {
+      if(d2 > 0)
+      {
+        //Primeiro quadrante
+        return (-atan(d1/d2));
+      }else
+      {
+        //Segundo quadrante
+        return (PI - atan(d1/d2));
+      }
+    }else
+    {
+      if(d2 < 0)
+      {
+        //Terceiro quadrante
+        return -(PI + atan(d1/d2));
+      }else
+      {
+        //Quarto quadrante
+        return (-atan(d1/d2));
+      }
+    }
+}
+
+//Funcao principal:
+int main() 
+{
+  //Definicao de variaveis:
+  float v = 10.0, alpha, theta, erro;
+  int mode = 1;
+
+  //Inicializando o robo:
+  wb_robot_init();
+
+  //Adquirindo os dispositivos do robo:
+  WbDeviceTag MTD = wb_robot_get_device("roda_direita");
+  WbDeviceTag MTE = wb_robot_get_device("roda_esquerda");
+  
+  //Setando os motores para operar em modo de controle de velocidade (posicao no infinito) e iniciar em velocidade zero:
+  wb_motor_set_position(MTD, INFINITY);
+  wb_motor_set_position(MTE, INFINITY);
+  wb_motor_set_velocity(MTD, 0.0);
+  wb_motor_set_velocity(MTE, 0.0);
+  
+  //Adquirindo os nos desejados, pela definicao deles na arvore:
+  WbNodeRef ra1 = wb_supervisor_node_get_from_def("RA1");
+  WbNodeRef bola = wb_supervisor_node_get_from_def("bola");
+  WbNodeRef gol_A = wb_supervisor_node_get_from_def("gol_A");
+  
+  //Adquirindo os fields desejados, pelos nos e nome (translation e rotation, no caso):
+  WbFieldRef RA1T = wb_supervisor_node_get_field(ra1, "translation");
+  WbFieldRef RA1R = wb_supervisor_node_get_field(ra1, "rotation");
+  WbFieldRef BOLAT = wb_supervisor_node_get_field(bola, "translation");
+  
+  WbFieldRef Gol_A = wb_supervisor_node_get_field(gol_A, "translation");
+
+  int modo = 0;  
+  
+  //Looping principal:
+  while (wb_robot_step(TIME_STEP) != -1) 
+  {
+    //Adquirindo os vetores de posicao e orientacao dos objetos desejados:
+    const double *ra1_pos = wb_supervisor_field_get_sf_vec3f(RA1T);
+    const double *ra1_rot = wb_supervisor_field_get_sf_rotation(RA1R);
+    const double *ball_pos = wb_supervisor_field_get_sf_vec3f(BOLAT);
+    
+    const double *gol_A_pos = wb_supervisor_field_get_sf_vec3f(Gol_A);
+    
+    float dx;
+    float dz;
+    //Diferenca entre as coordenadas:
+    if(modo == 0){
+    dx = (gol_A_pos[0]-ra1_pos[0]);
+    dz = (gol_A_pos[2]-ra1_pos[2]);
+    }
+    else{
+    
+    dx = (ball_pos[0]-ra1_pos[0]);
+    dz = (ball_pos[2]-ra1_pos[2]);
+    }
+    
+    //para imprimir o angulo entre a bola e o robo:
+    //printf("\n => %g", atan(dz/dx));
+    
+    
+    //para imprimir o valores de posicao e de rotacao:
+    //printf("\nPOS \t=> \t %g \t %g \t %g", ra1_pos[0], ra1_pos[1], ra1_pos[2]);
+    //printf("\nROT \t=> \t %g \t %g \t %g \t %g", ra1_rot[0], ra1_rot[1], ra1_rot[2], ra1_rot[3]);
+    
+    //Calcula o angulo relativo entre os objetos, por coordenadas:    
+    theta = relativeAngle(dz, dx);
+    
+    //Correcao do referencial de rotacao do robo:
+    alpha = (ra1_rot[1]*ra1_rot[3]);
+    
+    //Calcula o erro, baseado na rotacao atual do robo e aplica a funcao de normalizacao:
+    erro = normaliza(theta - alpha);
+    
+    
+    //para imprimir os valores calculados do angulo relativo, da correcao de referencial e do erro:
+    //printf("\n \t => \t %g \t %g \t %g", theta, alpha, erro);
+    
+    if(mode%2)
+    {
+      //Realiza a rotacao:
+      if(fabs(erro) < 1e-3) //O numero em potencia eh a precisao
+      {
+        wb_motor_set_velocity(MTD, 0.0);
+        wb_motor_set_velocity(MTE, 0.0);
+      }else
+      {
+        //Controle proporcional:
+        v = lim(((V_MAX/K1)*erro), V_MAX);
+        
+        wb_motor_set_velocity(MTD, v);
+        wb_motor_set_velocity(MTE, -v);
+      }
+    }else
+    {
+      //Aproxima do objeto:
+      float dist = sqrt(pow(dx, 2) + pow(dz, 2));
+      
+      if (dist<=0.149679){
+      modo = 1; 
+    }
+    
+      if(fabs(dist - D_SEG) > 1e-2) //O numero em potencia eh a precisao
+      {
+        //Controle proporcional:
+        v = lim(((V_MAX/K2)*dist), V_MAX);
+        
+        wb_motor_set_velocity(MTD, v);
+        wb_motor_set_velocity(MTE, v);
+        
+        //para plotar os valores calculados da distancia e da velocidade:
+        printf("\n \t => \t %g \t %g", dist, v);
+        
+      }else
+      {
+        wb_motor_set_velocity(MTD, 0.0);
+        wb_motor_set_velocity(MTE, 0.0);        
+      }
+    }   
+    
+    
+   
+     
+    mode++;
+  };
+
+  //Encerrando as atividades do robo:
+  wb_robot_cleanup();
+
+  return 0;
+}
