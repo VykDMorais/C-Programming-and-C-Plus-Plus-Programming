@@ -4,7 +4,7 @@
 //p=p+15 -> incrementa um ponteiro de 15
 //p = &valor - > salva valor no ponteiro
 //*p = 15 -> muda o valor de valor para 15
-// p = valor -> conecta fixamente tudo. Ex: se valor for um vetor[19] e todos suas colunas são trocadas de 1 para 2, todas as colunas de p[19] vão ser trocadas de 1 para 2
+// p = valor -> conecta fixamente tudo. Ex: se valor for um vetor[19] e se todos os valores suas colunas são trocadas de 1 para 2, todos os valores  das colunas de p[19] vão ser trocadas de 1 para 2
 int main()
 {
  int y, *p, x;
