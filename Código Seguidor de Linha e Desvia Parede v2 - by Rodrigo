@@ -1,0 +1,162 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <webots/distance_sensor.h>
+#include <webots/led.h>
+#include <webots/light_sensor.h>
+#include <webots/motor.h>
+#include <webots/robot.h>
+#include <webots/position_sensor.h>
+ 
+#define TIME_STEP 1
+#define S 2
+#define fs 1.0
+double ls, rs;
+WbDeviceTag gs0, gs1, gs2, left_motor, right_motor, ps5, ps2, ps7, ps0, encoder_direito, encoder_esquerdo;
+unsigned short gs_value[3] = {0, 0, 0};
+unsigned short ps_value[4] = {0, 0, 0, 0};
+ 
+// Variaveis para seguidor de linha
+float delta =0, erro_diff = 0, erro_soma = 0, delta_anterior = 0;
+float kp =0, kd = 0, ki =0, vm = 3.14/4;
+float gst[4];
+// Variaviss para encoders
+WbDeviceTag encoder_esquerdo, encoder_direito;
+double enc_v[2]; // enc 0 é esquerdo, 1 é direito
+ 
+int main(int argc, char **argv) {
+ 
+   wb_robot_init();    
+   // Inciador das leituras seguidor de linha
+   gs0 = wb_robot_get_device("gs0");
+   gs1 = wb_robot_get_device("gs1");
+   gs2 = wb_robot_get_device("gs2");
+   wb_distance_sensor_enable(gs0, TIME_STEP);
+   wb_distance_sensor_enable(gs1, TIME_STEP);
+   wb_distance_sensor_enable(gs2, TIME_STEP);
+   
+   // Iniciador das leituras dos sensores de distância
+   ps0 = wb_robot_get_device("ps0");
+   ps2 = wb_robot_get_device("ps2");
+   ps5 = wb_robot_get_device("ps5");
+   ps7 = wb_robot_get_device("ps7");
+   wb_distance_sensor_enable(ps0, TIME_STEP);
+   wb_distance_sensor_enable(ps2, TIME_STEP);
+   wb_distance_sensor_enable(ps5, TIME_STEP);
+   wb_distance_sensor_enable(ps7, TIME_STEP);
+   
+   // Ativando os encoders esquerdos e direitos
+   encoder_esquerdo = wb_robot_get_device("left wheel sensor");
+   encoder_direito = wb_robot_get_device("right wheel sensor");
+   wb_position_sensor_enable(encoder_esquerdo, TIME_STEP);
+   wb_position_sensor_enable(encoder_direito, TIME_STEP);
+   
+   // Iniciador do motor
+   left_motor = wb_robot_get_device("left wheel motor");
+   right_motor = wb_robot_get_device("right wheel motor");
+   wb_motor_set_position(left_motor, INFINITY);
+   wb_motor_set_position(right_motor, INFINITY);
+   wb_motor_set_velocity(left_motor, 0.0);
+   wb_motor_set_velocity(right_motor, 0.0);
+   
+   // Função para virar a esquerda, utiliza dos encoders para saber o momento de parada
+   void virar_esquerda(int x){
+     float ultima_distancia1 = wb_position_sensor_get_value(encoder_esquerdo);
+     while(ultima_distancia1 - wb_position_sensor_get_value(encoder_esquerdo) < 2.30*x){
+      rs = 3;
+      ls = -3;
+      wb_motor_set_velocity(right_motor, rs);
+      wb_motor_set_velocity(left_motor, ls);
+      wb_robot_step(TIME_STEP);
+      }
+   }
+   
+   // Função para virar a direita, utiliza dos encoders para saber o momento de parada
+   void virar_direita(int x){
+     float ultima_distancia = wb_position_sensor_get_value(encoder_direito);
+     while(ultima_distancia - wb_position_sensor_get_value(encoder_direito) < 2.30*x){
+     rs = -3;
+     ls = 3;
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     wb_robot_step(TIME_STEP);
+     }
+   }
+   
+   // Função para colocar na velocidade maxima
+   void vel_MAX(){
+     rs = 6;
+     ls = 6;
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     wb_robot_step(TIME_STEP);  
+   }
+   
+   // Função para colocar na velocidade "minima", utilizada principalmente para testes
+   void vel_min(){
+     rs = 0;
+     ls = 0;
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     wb_robot_step(TIME_STEP);
+   }
+   
+   while (wb_robot_step(TIME_STEP) != -1) {
+   
+   // Ler encoders
+     enc_v[0] = wb_position_sensor_get_value(encoder_esquerdo);
+     enc_v[1] = wb_position_sensor_get_value(encoder_direito);
+   /*plotar os resultados dos encoders*/
+     printf("encoder esq: %f  encoder dir: %f\n",(float)enc_v[0],(float)enc_v[1]);
+ 
+   // Pega os valores em do sensor do chão
+     gs_value[0] = wb_distance_sensor_get_value(gs0);
+     gs_value[1] = wb_distance_sensor_get_value(gs1);
+     gs_value[2] = wb_distance_sensor_get_value(gs2);
+     
+   // Pega os valores dos dois sensores de distância frontais do epuck
+     ps_value[0] = wb_distance_sensor_get_value(ps7);
+     ps_value[1] = wb_distance_sensor_get_value(ps0);
+   
+   // Tratamento dos valores dos sensores de chão (SeguidorDeLinha)
+     gst[0] =  ((float)gs_value[0]-250)/650; // esquerdo  
+     gst[2] =  ((float)gs_value[2]-250)/650; // direito
+     
+   // Parâmetros necessários à implementação do controlador PID
+     delta_anterior = delta; // armazenamento do erro anterior
+     delta = gst[0] - gst[2]; // atualização do erro
+     erro_diff = delta - delta_anterior; // computo da diferença do erro
+     erro_soma = erro_soma + delta; // somatório do erro
+   
+     kp = 2.2; // ganho proporcional
+     kd = 0.0; // ganho derivativo
+     ki = 0.8; // ganho integral
+   
+    // Implementação da velocidade das rodas esquerda (l) e direita (r)
+     ls = 2.8*vm + (kp*delta + kd*erro_diff + ki*erro_soma);
+     rs = 2.8*vm - (kp*delta + kd*erro_diff + ki*erro_soma);
+   
+   // Atualização da velocidade das rodas
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     
+   // Fazer curva na caixa, ativa a função com a informação dos sensores de distância  
+     if (ps_value[0] > 140 && ps_value[1]> 140){
+        virar_esquerda(1);
+        float anterior = wb_position_sensor_get_value(encoder_esquerdo);
+        while (wb_position_sensor_get_value(encoder_esquerdo) < anterior + 5){
+          vel_MAX();
+        }
+        virar_direita(1);
+        anterior = wb_position_sensor_get_value(encoder_esquerdo);  
+        while (wb_position_sensor_get_value(encoder_esquerdo) < anterior + 9.5){
+          vel_MAX();
+        }
+        virar_direita(1);
+        anterior = wb_position_sensor_get_value(encoder_esquerdo);
+        while (wb_position_sensor_get_value(encoder_esquerdo) < anterior + 5){
+          vel_MAX();
+        }
+        virar_esquerda(1);
+     }              
+   }
+}
