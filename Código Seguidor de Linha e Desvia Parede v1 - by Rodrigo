@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <webots/distance_sensor.h>
+#include <webots/motor.h>
+#include <webots/robot.h>
+#define TIME_STEP 1
+#define S 2
+#define fs 1.0
+double ls, rs;
+WbDeviceTag gs0, gs1, gs2, left_motor, right_motor, ps5, ps2, ps7, ps0, encoder_direito, encoder_esquerdo;
+unsigned short gs_value[3] = {0, 0, 0};
+unsigned short ps_value[4] = {0, 0, 0, 0};
+ 
+int main(int argc, char **argv) {
+ 
+   wb_robot_init();
+   gs0 = wb_robot_get_device("gs0");
+   gs1 = wb_robot_get_device("gs1");
+   gs2 = wb_robot_get_device("gs2");
+   ps0 = wb_robot_get_device("ps0");
+   ps2 = wb_robot_get_device("ps2");
+   ps5 = wb_robot_get_device("ps5");
+   ps7 = wb_robot_get_device("ps7");
+   wb_distance_sensor_enable(gs0, TIME_STEP);
+   wb_distance_sensor_enable(gs1, TIME_STEP);
+   wb_distance_sensor_enable(gs2, TIME_STEP);
+   wb_distance_sensor_enable(ps0, TIME_STEP);
+   wb_distance_sensor_enable(ps2, TIME_STEP);
+   wb_distance_sensor_enable(ps5, TIME_STEP);
+   wb_distance_sensor_enable(ps7, TIME_STEP);
+   left_motor = wb_robot_get_device("left wheel motor");
+   right_motor = wb_robot_get_device("right wheel motor");
+   wb_motor_set_position(left_motor, INFINITY);
+   wb_motor_set_position(right_motor, INFINITY);
+   wb_motor_set_velocity(left_motor, 0.0);
+   wb_motor_set_velocity(right_motor, 0.0);
+   
+   void virar_esquerda(int x){
+     int count = 0;
+     while(count*x < 50 ){
+     rs = 6;
+     ls = -2;
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     wb_robot_step(TIME_STEP);
+     count++;
+     }
+   }
+   
+   void virar_direita(int x){
+     int count = 0;
+     while(count*x < 50 ){
+     rs = -2;
+     ls = 6;
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     wb_robot_step(TIME_STEP);
+     count++;
+     }
+   }
+   
+   void vel_MAX(){
+     rs = 6;
+     ls = 6;
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     wb_robot_step(TIME_STEP);  
+   }
+   
+   void vel_min(){
+     rs = 1;
+     ls = 1;
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     wb_robot_step(TIME_STEP);
+   }
+     
+  while (wb_robot_step(TIME_STEP) != -1) {
+   
+     gs_value[0] = wb_distance_sensor_get_value(gs0);
+     gs_value[1] = wb_distance_sensor_get_value(gs1);
+     gs_value[2] = wb_distance_sensor_get_value(gs2);
+     ps_value[0] = wb_distance_sensor_get_value(ps7);
+     ps_value[1] = wb_distance_sensor_get_value(ps0);
+     ps_value[2] = wb_distance_sensor_get_value(ps2);
+     ps_value[3] = wb_distance_sensor_get_value(ps5);
+     
+     float delta, kp = 0 , kd = 0,  ki = 0, delta_anterior,delta_sum, delta_diff,gst[4];
+     gst[0] =  ((float)gs_value[0]-250)/650; // esquerdo
+     gst[2] =  ((float)gs_value[2]-250)/650; // direito
+     delta_anterior = delta;
+     delta = (gst[0] - gst[2])/0.85;
+   
+     ls = 2.2 * 0.785 + 3*delta + 2*delta_anterior;
+     rs = 2.2 * 0.785 - 3*delta - 2*delta_anterior;
+ 
+     wb_motor_set_velocity(left_motor, ls);
+     wb_motor_set_velocity(right_motor, rs);
+     
+     if (ps_value[0] > 140 && ps_value[1]> 140){
+        virar_esquerda(1);
+        int count = 0;
+        while (count < 30){
+          vel_MAX();
+          count++;
+        }
+        virar_direita(1);
+        count = 0;
+        while (count < 56){
+          vel_MAX();
+          count++;
+        }
+        virar_direita(1);
+        count = 0;
+        while (count < 16){
+          vel_MAX();
+          count++;
+        }
+        virar_esquerda(5);
+       
+     }
+     printf("Delta: %f | Motor Esquerdo: %f | Motor Direito: %f | GS0: %f | GS2: %f \n",delta, ls, rs, gs_value[0], gs_value[2]);
+  };
+ 
+ 
+  wb_robot_cleanup();
+ 
+  return 0;
+}
