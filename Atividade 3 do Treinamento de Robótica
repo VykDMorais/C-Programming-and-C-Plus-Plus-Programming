@@ -1,0 +1,309 @@
+#include <soccer.h>
+#include <webots/led.h>
+#include <webots/keyboard.h>
+#include <stdio.h>
+
+#define TIME_STEP 64
+
+//Posições estruturadas:
+float pos_RD1[1][2]= {{-530, -1400}}; //define as posições do robô 1
+float pos_RD2[3][2] = {{1800, -900}, {2100, -520} , {-1430, 1150}}; //define as posições do robô 1
+
+//Definição de variáveis globais:
+WbNodeRef duo, bola;
+
+int pass_step=-1;
+bool ativo;
+int chute_step = -1;
+//Função para realizar o passe: 
+//essa função foi retirada do código passe.c, disponivel no controlador "passe" no site do PET
+//para mais informações sobre a mesma, ver ultima aula assincrona no youtube
+
+bool passe()
+{
+  //Reinicia a lógica de passe:
+  if(pass_step == -1)
+  {
+    pass_step = 1;
+  }
+  
+  //Define se é o robô que vai dar  ou receber o passe. Evita que o robô entre na lógica do outro:
+  if(pass_step == 1)
+  {
+    if(ball_hold())
+    {
+      ativo = true;
+    }else
+    {
+      ativo = false;
+    }
+  }
+  
+  if(ativo)
+  {
+    switch(pass_step)
+    {
+      case 1:
+        //Envia sinal e aguarda recebê-lo novamente:
+        if(listen() != 'X')
+        {
+          tell('X');
+        }else
+        {
+          pass_step++;
+        }
+      break;
+      case 2:
+        kicker_load();
+        pass_step++;
+      break;
+      case 3:
+        //Recebe e envia eco:
+        if(listen() == 'Z')
+        {
+          tell('Z');
+          pass_step++;
+        }
+      break;
+      case 4:
+        if(!align(get_pos(duo), 5, 1e-3))
+        {
+          pass_step++;
+        }
+      break;
+      case 5:
+        //Envia e aguarda eco:
+        if(listen() != 'B')
+        {
+          tell('B');
+        }else
+        {
+          pass_step++;
+        }
+      break;
+      case 6:
+
+        kicker_shoot(lim((get_dist(get_pos(duo))/3500), 1));
+        pass_step = -1;
+        return false;
+      break;
+      
+    }
+  }else
+  {
+    switch(pass_step)
+    {
+      case 1:
+        //Recebe e envia eco:
+        if(listen() == 'X')
+        {
+          tell('X');
+          pass_step++;
+        }
+      break;
+      case 2:
+        if(!align(get_pos(duo), 5, 1e-3))
+        {
+          pass_step++;
+        }
+      break;
+      case 3:
+        //Envia e aguarda eco:
+        if(listen() != 'Z')
+        {
+          tell('Z');
+        }else
+        {
+          pass_step++;
+        }
+      break;
+      case 4:
+        //Recebe e envia eco:
+        if(listen() == 'B')
+        {
+          tell('B');
+          pass_step++;
+        }
+      break;
+      case 5:
+        if(!gotopos(get_pos(bola), -1))
+        {
+          pass_step = -1;
+          return false;
+        }
+      break;   
+    } 
+  }
+  return true;
+}
+
+int main() 
+{
+  wb_robot_init();
+  
+  //Inicialização dos dispositivos:
+  initialize(TIME_STEP);  
+  wb_keyboard_enable(TIME_STEP);
+  WbDeviceTag led = wb_robot_get_device("LED"); 
+  WbNodeRef gol_E = wb_supervisor_node_get_from_def("gol_E");
+  bool chute()
+{
+  if(chute_step == -1){
+   chute_step = 1;
+  }
+  if(ball_hold()){
+  
+  switch (chute_step)
+  {
+  
+  case 1:
+   kicker_load();
+     chute_step++;
+    break;
+    case 2:
+        if(!align(get_pos(gol_E), 10, 1e-3))
+        {
+          chute_step++;
+        }
+      break;
+      case 3:
+        kicker_shoot(1.0);
+        chute_step=-1;
+        return false;
+      break;
+    }    
+  }
+  return true;
+  }
+  
+  //Verifica o número do robô na dupla (1 ou 2):
+  int id = get_robo_id();
+  
+  //Adquirindo os nós desejados:
+  bola = wb_supervisor_node_get_from_def("BOLA");
+  gol_E = wb_supervisor_node_get_from_def("gol_E");
+
+  if(id == 1) //identifica os robôs
+  {
+    duo = wb_supervisor_node_get_from_def("RD2");
+  }else
+  {
+    duo = wb_supervisor_node_get_from_def("RD1");
+  }
+  
+  //Variáveis locais:
+  int step=-1;
+  
+  while (wb_robot_step(TIME_STEP) != -1) 
+  {    
+    if(get_match_state() == 'O') //se a partida estiver em andamento, ou seja, se a tecla P já tiver sido pressionada
+    {
+      step = 1;
+    }
+    
+    if(id == 1) //se for o primeiro robô
+    {
+      switch(step)
+      {
+        case 1:
+          wb_led_set(led, 1); //define a cor do led
+          if(!gotopos(get_pos(bola), -1)) //vai para a posição da bola, obtida através do supervisor
+          {
+            step++;
+          }
+        break;
+      
+      case 2:
+          wb_led_set(led, 2);
+          if(!passe())
+          {
+            step++;
+          }
+        break;
+      case 3:
+        if(!gotopos(pos_RD1[0], 0)){
+                  step++;
+        }
+      break;
+      case 4:
+      wb_led_set(led, 1);
+      if(!passe())
+          {
+            step++;
+          }
+        break;
+      case 5:
+      if(!gotopos(pos_RD1[0], 0)){
+                  step++;
+        }
+      break;
+      case 6:
+        wb_led_set(led, 3);
+        if(!passe())
+          {
+            step++;
+          }
+          break;
+       }
+      
+       
+    }else //se for o segundo robô
+    {
+      switch(step)
+      {
+        case 1:
+          wb_led_set(led, 1);
+          if(!gotopos(pos_RD2[0], 0))
+          {
+            step++;
+          }
+        break;
+        
+        case 2:
+          wb_led_set(led, 2);
+          if(!passe())
+          {
+            step++;
+          }
+        break;
+        case 3:
+          if(!gotopos(pos_RD2[1], 0)){
+          step++;
+          }
+        break;
+        case 4:
+         wb_led_set(led, 1);
+         if(!passe())
+          {
+            step++;
+          }
+        break;
+        case 5: 
+        if(!gotopos(pos_RD2[2], 0)){
+          step++;
+          }
+        break;
+        case 6:
+        wb_led_set(led, 2);
+        if(!passe())
+          {
+            step++;
+          }
+          break;
+        case 7: 
+        if(!chute()){
+        step++;
+        }
+        break;
+        
+        
+        
+        
+      }
+    }
+  };
+
+  wb_robot_cleanup();
+
+  return 0;
+}
