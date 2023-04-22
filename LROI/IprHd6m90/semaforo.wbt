@@ -1,0 +1,102 @@
+#VRML_SIM R2021a utf8
+WorldInfo {
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.8288618385901938 0.5273073263767808 0.1869091653136759 0.7742841145915159
+  position 0.1748446023018958 0.8481160882506076 1.0463938467114247
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 4 4
+}
+IprHd6m90 {
+  translation -0.27 0 0
+  controller "ipr_cube"
+  controllerArgs [
+    ""
+  ]
+}
+Solid {
+  translation 0.03 0.0149894 -0.08
+  rotation 5.45853e-16 1 6.80876e-16 0.261799
+  scale 0.5 0.5 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        texture ImageTexture {
+          url [
+            "C:/Users/victo/Downloads/Design sem nome.png"
+          ]
+        }
+      }
+      geometry Box {
+        size 0.1 0.1 0.1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 0.1 0.1 0.1
+  }
+  physics Physics {
+    mass 10
+  }
+}
+Solid {
+  translation -0.0726991 0.0349894 -0.237907
+  rotation 4.96404e-09 -1 1.85261e-08 -1.047195307179586
+  scale 0.5 0.5 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        texture ImageTexture {
+          url [
+            "C:/Users/victo/Downloads/Design sem nome (1).png"
+          ]
+        }
+      }
+      geometry Box {
+        size 0.1 0.1 0.1
+      }
+    }
+  ]
+  name "solid(1)"
+  boundingObject Box {
+    size 0.1 0.1 0.1
+  }
+  physics Physics {
+    mass 10
+  }
+}
+Solid {
+  translation -0.23 0.0149894 0.30928
+  rotation 9.89702e-16 1 5.27477e-16 0.261802
+  scale 0.5 0.5 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        texture ImageTexture {
+          url [
+            "C:/Users/victo/Downloads/Design sem nome (2).png"
+          ]
+        }
+      }
+      geometry Box {
+        size 0.1 0.1 0.1
+      }
+    }
+  ]
+  name "solid(2)"
+  boundingObject Box {
+    size 0.1 0.1 0.1
+  }
+  physics Physics {
+    mass 10
+    centerOfMass [
+      0 0 0
+    ]
+  }
+}
